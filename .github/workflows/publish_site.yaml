@@ -1,0 +1,30 @@
+name: Publish Site
+on:
+  push:
+    branches:
+      - 'main'
+jobs:
+  Publish-Site:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Install SSH Key And Test Connection
+        run: |
+          mkdir -p ~/.ssh/
+          install -m 600 -D /dev/null ~/.ssh/id
+          echo "${{ secrets.SSH_KEY }}" > ~/.ssh/id
+          
+          SSH_HOST_PUBLIC_KEY=$(ssh-keyscan -t ed25519 v4.electriclemur.com 2> /dev/null)
+          echo "$SSH_HOST_PUBLIC_KEY" >> ~/.ssh/known_hosts
+
+          SSH_HOST_PUBLIC_KEY=$(echo "$SSH_HOST_PUBLIC_KEY" | sed 's/^[a-z0-9\.]* //g')
+          echo "{SSH_HOST_PUBLIC_KEY}={${SSH_HOST_PUBLIC_KEY}}" >> $GITHUB_ENV
+
+          SSH_HOST=$(ssh root@v4.electriclemur.com -i ~/.ssh/id "hostname")
+          test "$SSH_HOST" = "lemur-web01"
+      - name: Restart container
+        run: |
+          ssh root@v4.electriclemur.com -i ~/.ssh/id "docker rm -f jw_resume 2> /dev/null 1> /dev/null"
+
+          ssh root@v4.electriclemur.com -i ~/.ssh/id "docker run -d --name jw_resume --label 'traefik.http.routers.jw_resume.rule=(Host(\`jameswilliams.me\`) && PathPrefix(\`/home\`))' --label 'traefik.enable=true' willia4/resume:3.1.3"
