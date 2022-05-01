@@ -28,4 +28,21 @@ jobs:
         run: |
           ssh root@v4.electriclemur.com -i ~/.ssh/id "docker rm -f jw_resume 2> /dev/null 1> /dev/null"
 
-          ssh root@v4.electriclemur.com -i ~/.ssh/id "docker run -d --name jw_resume --label 'traefik.http.routers.jw_resume.rule=(Host(\`jameswilliams.me\`) && PathPrefix(\`/resume\`))' --label 'traefik.http.routers.jw_resume.middlewares=jw_resume-stripprefix' --label 'traefik.http.middlewares.jw_resume-stripprefix.stripprefix.prefixes=/resume' --label 'traefik.enable=true' willia4/resume:3.1.3"
+          CMD=""
+          CMD+="docker run -d --name jw_resume "
+          CMD+="--label 'traefik.enable=true' "
+          CMD+="--label 'traefik.http.routers.jw_resume.entrypoints=websecure' "
+          CMD+="--label 'traefik.http.routers.jw_resume.rule=(Host(\`jameswilliams.me\`) && PathPrefix(\`/resume\`))' "
+          CMD+="--label 'traefik.http.routers.jw_resume.tls=true' "
+          CMD+="--label 'traefik.http.routers.jw_resume.tls.certresolver=le' "
+          CMD+="--label 'traefik.http.routers.jw_resume.middlewares=jw_resume-stripprefix' "
+          CMD+="--label 'traefik.http.middlewares.jw_resume-stripprefix.stripprefix.prefixes=/resume' "
+
+          CMD+="--label 'traefik.http.routers.jw_resume_redirect.entrypoints=web' "
+          CMD+="--label 'traefik.http.routers.jw_resume_redirect.rule=(Host(\`jameswilliams.me\`) && PathPrefix(\`/resume\`))' "
+          CMD+="--label 'traefik.http.routers.jw_resume_redirect.middlewares=jw_resume_redirect' "
+          CMD+="--label 'traefik.http.middlewares.jw_resume_redirect.redirectscheme.scheme=https' "
+          CMD+="willia4/resume:3.1.3 "
+
+          ssh root@v4.electriclemur.com -i ~/.ssh/id "$CMD"
+
