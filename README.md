@@ -1,10 +1,10 @@
 # James Williams Resume
 
-This repo will eventually host the source and build pipeline for [the resume of James Williams][resume_url]. 
+This repo hosted a build pipeline [the resume of James Williams][resume_url]. The pipeline deployed the old resume container to jameswilliams.me. 
 
-For now, the source is in its [original repo][old_repo] and the build pipeline merely deploys the existing container to the new site. 
+It has been superseded by the [resume module in Muscadine][muscadine].
 
-Stay tuned!
 
 [resume_url]: https://jameswilliams.me/resume
 [old_repo]: https://github.com/willia4/resume
+[muscadine]: https://github.com/willia4/jw_muscadine/blob/main/src/ElectricLemur.Muscadine.Site/Resume.fs

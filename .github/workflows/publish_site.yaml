@@ -1,48 +1,48 @@
-name: Publish Site
-on:
-  push:
-    branches:
-      - 'main'
-  workflow_dispatch:
-jobs:
-  Publish-Site:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-      - name: Install SSH Key And Test Connection
-        run: |
-          mkdir -p ~/.ssh/
-          install -m 600 -D /dev/null ~/.ssh/id
-          echo "${{ secrets.SSH_KEY }}" > ~/.ssh/id
+# name: Publish Site
+# on:
+#   push:
+#     branches:
+#       - 'main'
+#   workflow_dispatch:
+# jobs:
+#   Publish-Site:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Checkout
+#         uses: actions/checkout@v2
+#       - name: Install SSH Key And Test Connection
+#         run: |
+#           mkdir -p ~/.ssh/
+#           install -m 600 -D /dev/null ~/.ssh/id
+#           echo "${{ secrets.SSH_KEY }}" > ~/.ssh/id
           
-          SSH_HOST_PUBLIC_KEY=$(ssh-keyscan -t ed25519 v4.electriclemur.com 2> /dev/null)
-          echo "$SSH_HOST_PUBLIC_KEY" >> ~/.ssh/known_hosts
+#           SSH_HOST_PUBLIC_KEY=$(ssh-keyscan -t ed25519 v4.electriclemur.com 2> /dev/null)
+#           echo "$SSH_HOST_PUBLIC_KEY" >> ~/.ssh/known_hosts
 
-          SSH_HOST_PUBLIC_KEY=$(echo "$SSH_HOST_PUBLIC_KEY" | sed 's/^[a-z0-9\.]* //g')
-          echo "{SSH_HOST_PUBLIC_KEY}={${SSH_HOST_PUBLIC_KEY}}" >> $GITHUB_ENV
+#           SSH_HOST_PUBLIC_KEY=$(echo "$SSH_HOST_PUBLIC_KEY" | sed 's/^[a-z0-9\.]* //g')
+#           echo "{SSH_HOST_PUBLIC_KEY}={${SSH_HOST_PUBLIC_KEY}}" >> $GITHUB_ENV
 
-          SSH_HOST=$(ssh root@v4.electriclemur.com -i ~/.ssh/id "hostname")
-          test "$SSH_HOST" = "lemur-web01"
-      - name: Restart container
-        run: |
-          ssh root@v4.electriclemur.com -i ~/.ssh/id "docker rm -f jw_resume 2> /dev/null 1> /dev/null"
+#           SSH_HOST=$(ssh root@v4.electriclemur.com -i ~/.ssh/id "hostname")
+#           test "$SSH_HOST" = "lemur-web01"
+#       - name: Restart container
+#         run: |
+#           ssh root@v4.electriclemur.com -i ~/.ssh/id "docker rm -f jw_resume 2> /dev/null 1> /dev/null"
 
-          CMD=""
-          CMD+="docker run -d --name jw_resume --restart=always "
-          CMD+="--label 'traefik.enable=true' "
-          CMD+="--label 'traefik.http.routers.jw_resume.entrypoints=websecure' "
-          CMD+="--label 'traefik.http.routers.jw_resume.rule=(Host(\`jameswilliams.me\`) && PathPrefix(\`/resume\`))' "
-          CMD+="--label 'traefik.http.routers.jw_resume.tls=true' "
-          CMD+="--label 'traefik.http.routers.jw_resume.tls.certresolver=le' "
-          CMD+="--label 'traefik.http.routers.jw_resume.middlewares=jw_resume-stripprefix' "
-          CMD+="--label 'traefik.http.middlewares.jw_resume-stripprefix.stripprefix.prefixes=/resume' "
+#           CMD=""
+#           CMD+="docker run -d --name jw_resume --restart=always "
+#           CMD+="--label 'traefik.enable=true' "
+#           CMD+="--label 'traefik.http.routers.jw_resume.entrypoints=websecure' "
+#           CMD+="--label 'traefik.http.routers.jw_resume.rule=(Host(\`jameswilliams.me\`) && PathPrefix(\`/resume\`))' "
+#           CMD+="--label 'traefik.http.routers.jw_resume.tls=true' "
+#           CMD+="--label 'traefik.http.routers.jw_resume.tls.certresolver=le' "
+#           CMD+="--label 'traefik.http.routers.jw_resume.middlewares=jw_resume-stripprefix' "
+#           CMD+="--label 'traefik.http.middlewares.jw_resume-stripprefix.stripprefix.prefixes=/resume' "
 
-          CMD+="--label 'traefik.http.routers.jw_resume_redirect.entrypoints=web' "
-          CMD+="--label 'traefik.http.routers.jw_resume_redirect.rule=(Host(\`jameswilliams.me\`) && PathPrefix(\`/resume\`))' "
-          CMD+="--label 'traefik.http.routers.jw_resume_redirect.middlewares=jw_resume_redirect' "
-          CMD+="--label 'traefik.http.middlewares.jw_resume_redirect.redirectscheme.scheme=https' "
-          CMD+="willia4/resume:3.1.3 "
+#           CMD+="--label 'traefik.http.routers.jw_resume_redirect.entrypoints=web' "
+#           CMD+="--label 'traefik.http.routers.jw_resume_redirect.rule=(Host(\`jameswilliams.me\`) && PathPrefix(\`/resume\`))' "
+#           CMD+="--label 'traefik.http.routers.jw_resume_redirect.middlewares=jw_resume_redirect' "
+#           CMD+="--label 'traefik.http.middlewares.jw_resume_redirect.redirectscheme.scheme=https' "
+#           CMD+="willia4/resume:3.1.3 "
 
-          ssh root@v4.electriclemur.com -i ~/.ssh/id "$CMD"
+#           ssh root@v4.electriclemur.com -i ~/.ssh/id "$CMD"
 
